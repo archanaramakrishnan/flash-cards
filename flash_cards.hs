@@ -28,7 +28,7 @@ readFromFile (firstArg:argsList) = do
                     --putStr txt
                     --readFromFile argsList
 
-startFlashCards [] [] = putStr "\nDone in startFlashCards!\n"
+startFlashCards [] [] = putStr "\n"
 startFlashCards (q:questionList) (a:answerList) = do
                                     printFlashCard q
                                     printFlashCard a
@@ -71,7 +71,8 @@ printWelcomePage :: IO()
 printWelcomePage = do
     putStr "\n\n\tWelcome to the flash cards program!\n"
     render (scale 0.8 frame) (scale 0.6 frame)
-    putStr "\n\n   Enter a lower case letter to review words: \n"
+    putStr "\n\nLet's start reviewing. Hit 'r' to reveal the answer. \n"
+    putStr "If you knew the answer, enter 'y' and if you did not, enter 'n'.\n"
     --choice <- getChar
     --executeChoice choice
 
