@@ -6,7 +6,7 @@ import Text.Layout.Table
 --main calls loop with an arg
 
 main :: IO()
-main = printWelcomePage >> loop
+main = printWelcomePage
   
 loop :: IO()
 loop = do
@@ -17,7 +17,7 @@ loop = do
         --printFlashCard "Scientifically, diamonds need a source of light that they can reflect, illuminating their near vicinity with a radiant light of their best qualities. In the lack of favorable motivation, resources, people, and situations, this light source may disappear, but hey, you don’t ever stop being a diamond!"
         loop
 
-
+readFromFile :: [FilePath] -> IO ()
 readFromFile [] = putStr "Done in readFromFile!\n"
 readFromFile (firstArg:argsList) = do 
                     txt <- (readFile firstArg)
@@ -25,19 +25,20 @@ readFromFile (firstArg:argsList) = do
                     let answerList = grabAnswer txt
                     startFlashCards questionList answerList
                     readFromFile (argsList)
-                    --putStr txt
-                    --readFromFile argsList
 
+startFlashCards :: [String] -> [String] -> IO ()
 startFlashCards [] [] = putStr "\n"
 startFlashCards (q:questionList) (a:answerList) = do
-                                    printFlashCard q
-                                    printFlashCard a
-                                    line <- getLine
-                                    when (line == "n") $ do
-                                        startFlashCards questionList answerList
-{-readFromFile args =  sequence_ [ do
-            txt <- readFile fileName
-            (printFlashCard ((grabQuestion txt)!!0)) | fileName <- args]-}
+                                                    printFlashCard q
+                                                    putStr "\nHit 'r' to reveal the answer.\n"
+                                                    reveal <- getChar
+                                                    if reveal == 'r' || reveal == 'R' then printFlashCard a
+                                                    else startFlashCards (q:questionList) (a:answerList)
+                                                    putStr "\nHit any key to go to the next flashcard.\n"
+                                                    putStr "Hit 'q' to quit.\n"
+                                                    choice <- getChar
+                                                    if choice == 'q' || choice == 'Q' then putStr "THE END\n"
+                                                    else (startFlashCards (questionList) (answerList))
 
 grabQuestion :: String -> [String]
 grabQuestion txt = fmap word lst where lst = lines txt
@@ -69,12 +70,15 @@ reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 
 printWelcomePage :: IO()
 printWelcomePage = do
-    putStr "\n\n\tWelcome to the flash cards program!\n"
+    putStr "\n\n\tWelcome to the flash cards program!"
+    putStr "\n\t___________________________________\n"
+    putStr "\n\t    Hit 'r' to reveal the answer. \n"
+    putStr "\tIf you know the answer, enter 'y'\n"
+    putStr "\tIf you do not know the answer enter 'n'.\n"
     render (scale 0.8 frame) (scale 0.6 frame)
-    putStr "\n\nLet's start reviewing. Hit 'r' to reveal the answer. \n"
-    putStr "If you knew the answer, enter 'y' and if you did not, enter 'n'.\n"
-    --choice <- getChar
-    --executeChoice choice
+    putStr "\n\tPress any key to start reviewing!"
+    go <- getChar
+    loop
 
 newtype Shape = Shape (Point -> Bool)
 type Point = (Double, Double)
