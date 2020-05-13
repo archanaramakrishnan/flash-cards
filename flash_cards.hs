@@ -14,8 +14,9 @@ loop = do
     readFromFile args
     line <- getLine
     when (line /= "Quit" && line /= "quit" && line /= "QUIT") $ do
-        printFlashCard "Scientifically, diamonds need a source of light that they can reflect, illuminating their near vicinity with a radiant light of their best qualities. In the lack of favorable motivation, resources, people, and situations, this light source may disappear, but hey, you don’t ever stop being a diamond!"
+        --printFlashCard "Scientifically, diamonds need a source of light that they can reflect, illuminating their near vicinity with a radiant light of their best qualities. In the lack of favorable motivation, resources, people, and situations, this light source may disappear, but hey, you don’t ever stop being a diamond!"
         loop
+
 
 readFromFile [] = putStr "Done in readFromFile!\n"
 readFromFile (firstArg:argsList) = do 
@@ -23,6 +24,7 @@ readFromFile (firstArg:argsList) = do
                     let questionList = grabQuestion txt
                     let answerList = grabAnswer txt
                     startFlashCards questionList answerList
+                    readFromFile (argsList)
                     --putStr txt
                     --readFromFile argsList
 
@@ -81,7 +83,7 @@ frame = Shape (\(x,y) -> x^512 + y^512 >=1)
 
 render :: Shape -> Shape -> IO()
 render outerFrame innerFrame = putStr $ unlines
-            [ [ if x == midX && y == midY  then '✰'
+            [ [      if x == midX && y == midY  then '✰'
                 else if inside (x,y) outerFrame then '#'
                 else if inside (x,y) innerFrame then '.'
                 else ' ' | x <- [-1, -0.962 .. 1] ] | y <- [1, 0.9 .. -1] ]
