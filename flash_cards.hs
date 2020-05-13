@@ -1,9 +1,7 @@
-import Data.List
+--import Data.List
 import System.Environment
 import Control.Monad
 import Text.Layout.Table
-
---main calls loop with an arg
 
 main :: IO()
 main = printWelcomePage
@@ -12,13 +10,9 @@ loop :: IO()
 loop = do
     args <- getArgs
     readFromFile args
-    line <- getLine
-    when (line /= "Quit" && line /= "quit" && line /= "QUIT") $ do
-        --printFlashCard "Scientifically, diamonds need a source of light that they can reflect, illuminating their near vicinity with a radiant light of their best qualities. In the lack of favorable motivation, resources, people, and situations, this light source may disappear, but hey, you don’t ever stop being a diamond!"
-        loop
 
 readFromFile :: [FilePath] -> IO ()
-readFromFile [] = putStr "Done in readFromFile!\n"
+readFromFile [] = putStr "You have reviewed all the flashcard notes from file, great job! ☆\n"
 readFromFile (firstArg:argsList) = do 
                     txt <- (readFile firstArg)
                     let questionList = grabQuestion txt
@@ -29,14 +23,17 @@ readFromFile (firstArg:argsList) = do
 startFlashCards :: [String] -> [String] -> IO ()
 startFlashCards [] [] = putStr "\n"
 startFlashCards (q:questionList) (a:answerList) = do
-                                                    printFlashCard q
-                                                    putStr "\nHit 'r' to reveal the answer.\n"
+                                                    printFlashCard "What is" q
+                                                    putStr "\tEnter 'r' to reveal the answer.\n"
                                                     reveal <- getChar
-                                                    if reveal == 'r' || reveal == 'R' then printFlashCard a
+                                                    putStr "\n"
+                                                    if reveal == 'r' || reveal == 'R' then printFlashCard q a
                                                     else startFlashCards (q:questionList) (a:answerList)
-                                                    putStr "\nHit any key to go to the next flashcard.\n"
-                                                    putStr "Hit 'q' to quit.\n"
+                                                    putStr "\tEnter any key to go to the next flashcard."
+                                                    putStr "\n\tEnter 'q' to quit.\n\n"
+                                                    putStr "\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
                                                     choice <- getChar
+                                                    putStr "\n"
                                                     if choice == 'q' || choice == 'Q' then putStr "THE END\n"
                                                     else (startFlashCards (questionList) (answerList))
 
@@ -55,11 +52,11 @@ meaning = unwords . tail . words
 executeChoice :: Char -> IO()
 executeChoice txt = putChar txt
 
-printFlashCard :: String -> IO ()
-printFlashCard text = putStrLn $ tableString [fixedLeftCol 50, numCol] --[ColSpec]
+printFlashCard :: String -> String -> IO ()
+printFlashCard question answer = putStrLn $ tableString [fixedLeftCol 50, numCol] --[ColSpec]
                           asciiS --TableStyle
-                          (titlesH ["Text"]) --HeaderSpec
-                          [ colsAllG center [reverseParagraph $ justifyText 50 text]] --[RowGroup a]
+                          (titlesH [question]) --HeaderSpec
+                          [ colsAllG center [reverseParagraph $ justifyText 50 answer]] --[RowGroup a]
 
 reverseLine :: String -> String
 reverseLine txt = unwords $ reverse $ words txt
@@ -72,11 +69,11 @@ printWelcomePage :: IO()
 printWelcomePage = do
     putStr "\n\n\tWelcome to the flash cards program!"
     putStr "\n\t___________________________________\n"
-    putStr "\n\t    Hit 'r' to reveal the answer. \n"
+    putStr "\n\t    Enter 'r' to reveal the answer. \n"
     putStr "\tIf you know the answer, enter 'y'\n"
     putStr "\tIf you do not know the answer enter 'n'.\n"
     render (scale 0.8 frame) (scale 0.6 frame)
-    putStr "\n\tPress any key to start reviewing!"
+    putStr "\n\t  Press any key to start reviewing!\n"
     go <- getChar
     loop
 
@@ -88,7 +85,7 @@ frame = Shape (\(x,y) -> x^512 + y^512 >=1)
 
 render :: Shape -> Shape -> IO()
 render outerFrame innerFrame = putStr $ unlines
-            [ [      if x == midX && y == midY  then '✰'
+            [ [      if x == midX && y == midY  then '☆'
                 else if inside (x,y) outerFrame then '#'
                 else if inside (x,y) innerFrame then '.'
                 else ' ' | x <- [-1, -0.962 .. 1] ] | y <- [1, 0.9 .. -1] ]
