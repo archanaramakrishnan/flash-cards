@@ -12,7 +12,7 @@ loop = do
     readFromFile args
 
 readFromFile :: [FilePath] -> IO ()
-readFromFile [] = putStr "\n"
+readFromFile [] = printExitPage
 readFromFile (firstArg:argsList) = do 
                     txt <- (readFile firstArg)
                     let questionList = grabQuestion txt
@@ -21,20 +21,20 @@ readFromFile (firstArg:argsList) = do
                     readFromFile (argsList)
 
 startFlashCards :: [String] -> [String] -> IO ()
-startFlashCards [] [] = putStr "You have reviewed all the flashcard notes from file, great job!\n" >> printExitPage
+startFlashCards [] [] = putStr "\n"
 startFlashCards (q:questionList) (a:answerList) = do
-                                                    printFlashCard "What is" (q ++ "?")
-                                                    putStr "\t  Press any key to reveal the answer. "
-                                                    reveal <- getChar
-                                                    if reveal /= '\n' then putStr "\n" else putStr ""
-                                                    printFlashCard q a
-                                                    putStr "\tEnter any key to go to the next flashcard."
-                                                    putStr "\n\tEnter 'q' to quit. "
-                                                    choice <- getChar
-                                                    putStr "\n\n\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
-                                                    putStr "\n"
-                                                    if choice == 'q' || choice == 'Q' then printExitPage
-                                                    else (startFlashCards (questionList) (answerList))
+                printFlashCard "What is" (q ++ "?")
+                putStr "\t  Press any key to reveal the answer. "
+                reveal <- getChar
+                if reveal /= '\n' then putStr "\n" else putStr ""
+                printFlashCard q a
+                putStr "\tEnter any key to go to the next flashcard."
+                putStr "\n\tEnter 'q' to quit. "
+                choice <- getChar
+                putStr "\n\n\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
+                putStr "\n"
+                if choice == 'q' || choice == 'Q' then putStr ""
+                else (startFlashCards (questionList) (answerList))
 
 grabQuestion :: String -> [String]
 grabQuestion txt = fmap word lst where lst = lines txt
@@ -65,9 +65,7 @@ reverseParagraph [] = []
 reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 
 printExitPage :: IO()
-printExitPage = do
-    putStr "Thank you for using the flash cards program! ☆\n"
-    readFromFile []
+printExitPage = putStr "Thank you for using the flash cards program! ☆\n\n"
 
 printWelcomePage :: IO()
 printWelcomePage = do
@@ -101,11 +99,7 @@ scale :: Double -> Shape -> Shape
 scale s (Shape f) = Shape  $ \(x,y) -> f (x/s, y/s)
 
 midX :: Double
-midX = let midIndex = (length lst `div` 2) in 
-        lst!!midIndex 
-        where lst = [-1, -0.962 .. 1]
+midX = let midIndex = (length lst `div` 2) in lst!!midIndex  where lst = [-1, -0.962 .. 1]
 
 midY :: Double
-midY = let midIndex = (length lst `div` 2) in 
-        lst!!midIndex 
-        where lst = [1, 0.9 .. -1]
+midY = let midIndex = (length lst `div` 2) in lst!!midIndex where lst = [1, 0.9 .. -1]
