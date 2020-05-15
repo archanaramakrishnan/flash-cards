@@ -20,14 +20,14 @@ getFileName = do
   
 printWelcomePage :: [FilePath] -> IO()
 printWelcomePage args = do
-            putStr "\n\n\tWelcome to the flash cards program!"
+            putStr "\n\n\tWelcome to the flashcards program!"
             putStr "\n\t___________________________________\n\n"
             putStr "\t  If you know the answer, press 'y'\n"
             putStr "\t   to keep track of your score!\n\n"
             putStr "\tIf you do not, press any other key ☆\n"
             putStr "\tCards will repeat until you learn them!\n\n"
+            putStr "\n\t  Press any key to start reviewing!\n\n"
             render (scale 0.8 frame) (scale 0.6 frame)
-            putStr "\n\t  Press any key to start reviewing!\n"
             go <- getChar
             createQuestionList [] [] args args
 
@@ -49,14 +49,15 @@ createQuestionList (questionList) (answerList) (firstArg:argsList) fileList = do
 startFlashCards :: Int -> [String] -> [String] -> [FilePath] -> IO ()
 startFlashCards score [] [] fileList = printExitPage score fileList
 startFlashCards score (q:questionList) (a:answerList) fileList = do
+            putStr "\t  Press any key to reveal the answer.\n"
             printFlashCard "Question" q
-            putStr "\t  Press any key to reveal the answer. "
+            putStr "\t\t\t☆"
             reveal <- getChar
             if reveal /= '\n' then putStr "\n" else putStr ""
             printFlashCard q a
             putStr "\n\t☆ Press 'r' - to review this again"
             putStr "\n\t☆ Press 'q' - to quit"
-            putStr "\n\t☆ Press any other key - if you knew \n\t the answer and want to continue"
+            putStr "\n\t☆ Press any other key - if you knew \n\t the answer and want to continue "
             choice <- getChar
             if choice /= '\n' then putStr "\n" else putStr ""
             putStr "\n\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
@@ -109,7 +110,7 @@ reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 printExitPage :: Int -> [FilePath] -> IO()
 printExitPage score fileList = do
         putStr "You knew the answers to " >> (putStr $ show $ score) >> (printQuestionCount fileList 0)
-        putStr "Thank you for using the flash cards program! ☆\n\n"
+        putStr "Thank you for using the flashcards program! ☆\n\n"
 
 printQuestionCount :: [String] -> Int -> IO()
 printQuestionCount [] count = putStr " out of the "  >> (putStr $ show $ count) >> putStr " flashcards!\n" 
