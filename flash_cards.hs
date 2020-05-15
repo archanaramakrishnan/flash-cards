@@ -11,25 +11,25 @@ main = getFileName
 
 getFileName :: IO()
 getFileName = do
-    args <- getArgs
-    if length args == 0 then putStr "try ./flash_cards quiz.txt (from terminal) \nor :main quiz.txt (from ghci)\n" else do
-        printWelcomePage args
+            args <- getArgs
+            if length args == 0 then putStr "try ./flash_cards quiz.txt (from terminal) \nor :main quiz.txt (from ghci)\n" else do
+                printWelcomePage args
 
 
 {- to print the welcome page which calls the function to create the flashcards deck-}
   
 printWelcomePage :: [FilePath] -> IO()
 printWelcomePage args = do
-    putStr "\n\n\tWelcome to the flash cards program!"
-    putStr "\n\t___________________________________\n\n"
-    putStr "\t  If you know the answer, press 'y'\n"
-    putStr "\t   to keep track of your score!\n\n"
-    putStr "\tIf you do not, press any other key ☆\n"
-    putStr "\tCards will repeat until you learn them!\n\n"
-    render (scale 0.8 frame) (scale 0.6 frame)
-    putStr "\n\t  Press any key to start reviewing!\n"
-    go <- getChar
-    createQuestionList [] [] args args
+            putStr "\n\n\tWelcome to the flash cards program!"
+            putStr "\n\t___________________________________\n\n"
+            putStr "\t  If you know the answer, press 'y'\n"
+            putStr "\t   to keep track of your score!\n\n"
+            putStr "\tIf you do not, press any other key ☆\n"
+            putStr "\tCards will repeat until you learn them!\n\n"
+            render (scale 0.8 frame) (scale 0.6 frame)
+            putStr "\n\t  Press any key to start reviewing!\n"
+            go <- getChar
+            createQuestionList [] [] args args
 
 
 {- to create a deck of flashcards, each line in the files representing one flashcard -}
@@ -37,11 +37,11 @@ printWelcomePage args = do
 createQuestionList :: [String] -> [String] -> [FilePath] -> [FilePath] -> IO ()
 createQuestionList questionList answerList [] fileList = startFlashCards 0 questionList answerList fileList
 createQuestionList (questionList) (answerList) (firstArg:argsList) fileList = do 
-                    isValidFile <- doesFileExist firstArg
-                    if isValidFile == True then do
-                        txt <- (readFile firstArg)
-                        createQuestionList (questionList ++ (questionFromFile txt)) (answerList ++ (answerFromFile txt)) argsList fileList
-                    else putStr "One or more of the files passed in do not exist in this directory. Please check the file names and try again.\n"
+            isValidFile <- doesFileExist firstArg
+            if isValidFile == True then do
+                txt <- (readFile firstArg)
+                createQuestionList (questionList ++ (questionFromFile txt)) (answerList ++ (answerFromFile txt)) argsList fileList
+            else putStr "One or more of the files passed in could not be found. Please check the file names and try again.\n"
 
 
 {- to loop through the flash cards until the deck is empty -}
@@ -54,16 +54,16 @@ startFlashCards score (q:questionList) (a:answerList) fileList = do
             reveal <- getChar
             if reveal /= '\n' then putStr "\n" else putStr ""
             printFlashCard q a
-            putStr "\n\tPress 'y' - if you knew the answer!"
-            putStr "\n\tPress 'q' - if you want to quit"
-            putStr "\n\tPress any other key - to continue "
+            putStr "\n\t☆ Press 'r' - to review this again"
+            putStr "\n\t☆ Press 'q' - to quit"
+            putStr "\n\t☆ Press any other key - if you knew \n\t the answer and want to continue"
             choice <- getChar
             if choice /= '\n' then putStr "\n" else putStr ""
             putStr "\n\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
             putStr "\n"
             if choice == 'q' || choice == 'Q' then printExitPage score fileList
-            else if choice == 'y' || choice == 'Y' then (startFlashCards (score+1) (questionList) (answerList) fileList)
-            else (startFlashCards score (questionList ++ [q]) (answerList ++ [a]) fileList)
+            else if choice == 'r' || choice == 'R' then (startFlashCards score (questionList ++ [q]) (answerList ++ [a]) fileList)
+            else (startFlashCards (score+1) (questionList) (answerList) fileList)
 
 
 {- to read question and answers from the following format: 
@@ -92,9 +92,9 @@ afterColon (x:y:xs) = if y == ":" then unwords xs else afterColon (y:xs)
 
 printFlashCard :: String -> String -> IO ()
 printFlashCard question answer = putStrLn $ tableString [fixedLeftCol 50, numCol] --[ColSpec]
-                          asciiS --TableStyle
-                          (titlesH [question]) --HeaderSpec
-                          [ colsAllG center [reverseParagraph $ justifyText 50 answer]] --[RowGroup a]
+            asciiS --TableStyle
+            (titlesH [question]) --HeaderSpec
+            [ colsAllG center [reverseParagraph $ justifyText 50 answer]] --[RowGroup a]
 
 reverseLine :: String -> String
 reverseLine txt = unwords $ reverse $ words txt
@@ -108,14 +108,14 @@ reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 
 printExitPage :: Int -> [FilePath] -> IO()
 printExitPage score fileList = do
-    putStr "You knew the answers to " >> (putStr $ show $ score) >> (printQuestionCount fileList 0)
-    putStr "Thank you for using the flash cards program! ☆\n\n"
+        putStr "You knew the answers to " >> (putStr $ show $ score) >> (printQuestionCount fileList 0)
+        putStr "Thank you for using the flash cards program! ☆\n\n"
 
 printQuestionCount :: [String] -> Int -> IO()
 printQuestionCount [] count = putStr " out of the "  >> (putStr $ show $ count) >> putStr " flashcards!\n" 
 printQuestionCount (firstArg:argsList) count = do
-    txt <- (readFile firstArg)
-    (printQuestionCount argsList ((linesCount txt) + count))
+        txt <- (readFile firstArg)
+        (printQuestionCount argsList ((linesCount txt) + count))
 
 linesCount :: String -> Int
 linesCount text = length $ lines text 
