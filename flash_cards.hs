@@ -9,32 +9,32 @@ main = printWelcomePage
 loop :: IO()
 loop = do
     args <- getArgs
-    readFromFile args
+    createQuestionList [] [] args
 
-readFromFile :: [FilePath] -> IO ()
-readFromFile [] = printExitPage
-readFromFile (firstArg:argsList) = do 
+createQuestionList :: [String] -> [String] -> [FilePath] -> IO ()
+createQuestionList questionList answerList [] = startFlashCards 0 questionList answerList
+createQuestionList (questionList) (answerList) (firstArg:argsList) = do 
                     txt <- (readFile firstArg)
-                    let questionList = grabQuestion txt
-                    let answerList = grabAnswer txt
-                    startFlashCards questionList answerList
-                    readFromFile (argsList)
+                    createQuestionList (questionList ++ (grabQuestion txt)) (answerList ++ (grabAnswer txt)) argsList
 
-startFlashCards :: [String] -> [String] -> IO ()
-startFlashCards [] [] = putStr "\n"
-startFlashCards (q:questionList) (a:answerList) = do
-                printFlashCard "What is" (q ++ "?")
-                putStr "\t  Press any key to reveal the answer. "
-                reveal <- getChar
-                if reveal /= '\n' then putStr "\n" else putStr ""
-                printFlashCard q a
-                putStr "\tEnter any key to go to the next flashcard."
-                putStr "\n\tEnter 'q' to quit. "
-                choice <- getChar
-                putStr "\n\n\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
-                putStr "\n"
-                if choice == 'q' || choice == 'Q' then putStr ""
-                else (startFlashCards (questionList) (answerList))
+startFlashCards :: Int -> [String] -> [String] -> IO ()
+startFlashCards score [] [] = putStr "You scored " >> (putStr $ show $ score) >> putStr " points!!\n" >> printExitPage score 0
+startFlashCards score (q:questionList) (a:answerList) = do
+            printFlashCard "Question" q
+            putStr "\t  Press any key to reveal the answer. "
+            reveal <- getChar
+            if reveal /= '\n' then putStr "\n" else putStr ""
+            printFlashCard q a
+            putStr "\n\tPress 'y' - if you knew the answer!"
+            putStr "\n\tPress 'q' - if you want to quit"
+            putStr "\n\tPress any other key - to continue "
+            choice <- getChar
+            if choice /= '\n' then putStr "\n" else putStr ""
+            putStr "\n\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
+            putStr "\n"
+            if choice == 'q' || choice == 'Q' then printExitPage score 0
+            else if choice == 'y' || choice == 'Y' then (startFlashCards (score+1) (questionList) (answerList))
+            else (startFlashCards score (questionList ++ [q]) (answerList ++ [a]))
 
 grabQuestion :: String -> [String]
 grabQuestion txt = fmap word lst where lst = lines txt
@@ -64,16 +64,19 @@ reverseParagraph :: [String] -> [String]
 reverseParagraph [] = []
 reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 
-printExitPage :: IO()
-printExitPage = putStr "Thank you for using the flash cards program! ☆\n\n"
+printExitPage :: Int -> Int -> IO()
+printExitPage score total = do
+    putStr "You knew the answers to " >> (putStr $ show $ score) >> putStr " out of the "  >> (putStr $ show $ total) >> putStr " flashcards!!\n" 
+    putStr "Thank you for using the flash cards program! ☆\n\n"
 
 printWelcomePage :: IO()
 printWelcomePage = do
     putStr "\n\n\tWelcome to the flash cards program!"
-    putStr "\n\t___________________________________\n"
-    putStr "\n\t    Enter 'r' to reveal the answer. \n"
-    putStr "\tIf you know the answer, enter 'y'\n"
-    putStr "\tIf you do not know the answer enter 'n'.\n"
+    putStr "\n\t___________________________________\n\n"
+    putStr "\t  If you know the answer, press 'y'\n"
+    putStr "\t   to keep track of your score!\n\n"
+    putStr "\tIf you do not, press any other key ☆\n"
+    putStr "\tCards will repeat until you learn them!\n\n"
     render (scale 0.8 frame) (scale 0.6 frame)
     putStr "\n\t  Press any key to start reviewing!\n"
     go <- getChar
