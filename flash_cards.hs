@@ -5,6 +5,8 @@ import Text.Layout.Table
 
 main :: IO()
 main = printWelcomePage
+
+{- to print the welcome page which calls the function to read the terminal arguments-}
   
 printWelcomePage :: IO()
 printWelcomePage = do
@@ -19,16 +21,25 @@ printWelcomePage = do
     go <- getChar
     getFileName
 
+
+{- to get file names from the terminal to read the flashcard question and answers from -}
+
 getFileName :: IO()
 getFileName = do
     args <- getArgs
-    createQuestionList [] [] args args 
+    createQuestionList [] [] args args
+
+
+{- to create a deck of flashcards, each line in the files representing one flashcard -}
 
 createQuestionList :: [String] -> [String] -> [FilePath] -> [FilePath] -> IO ()
 createQuestionList questionList answerList [] fileList = startFlashCards 0 questionList answerList fileList
 createQuestionList (questionList) (answerList) (firstArg:argsList) fileList = do 
                     txt <- (readFile firstArg)
-                    createQuestionList (questionList ++ (grabQuestion txt)) (answerList ++ (grabAnswer txt)) argsList fileList
+                    createQuestionList (questionList ++ (questionFromFile txt)) (answerList ++ (answerFromFile txt)) argsList fileList
+
+
+{- to loop through the flash cards until the deck is empty -}
 
 startFlashCards :: Int -> [String] -> [String] -> [FilePath] -> IO ()
 startFlashCards score [] [] fileList = printExitPage score fileList
@@ -49,29 +60,30 @@ startFlashCards score (q:questionList) (a:answerList) fileList = do
             else if choice == 'y' || choice == 'Y' then (startFlashCards (score+1) (questionList) (answerList) fileList)
             else (startFlashCards score (questionList ++ [q]) (answerList ++ [a]) fileList)
 
-printQuestionCount :: [String] -> Int -> IO()
-printQuestionCount [] count = putStr " out of the "  >> (putStr $ show $ count) >> putStr " flashcards!!\n" 
-printQuestionCount (firstArg:argsList) count = do
-    txt <- (readFile firstArg)
-    (printQuestionCount argsList ((linesCount txt) + count))
 
-linesCount :: String -> Int
-linesCount text = length $ lines text
+{- to read question and answers from the following format: 
+    "question is placed here : answer goes here" -}
 
-grabQuestion :: String -> [String]
-grabQuestion txt = fmap word lst where lst = lines txt
+questionFromFile :: String -> [String]
+questionFromFile txt = fmap getQuestion $ lines txt
 
-word :: String -> String
-word = head . words
+getQuestion :: String -> String
+getQuestion txt = beforeColon $ reverse $ words txt
 
-grabAnswer :: String -> [String]
-grabAnswer txt = fmap meaning lst where lst = lines txt
+beforeColon :: [String] -> String
+beforeColon (x:y:xs) = if y == ":" then unwords $ reverse xs else beforeColon (y:xs)
 
-meaning :: String -> String
-meaning = unwords . tail . words
+answerFromFile :: String -> [String]
+answerFromFile txt = fmap getAnswer $ lines txt
 
-executeChoice :: Char -> IO()
-executeChoice txt = putChar txt
+getAnswer :: String -> String
+getAnswer txt = afterColon $ words txt
+
+afterColon :: [String] -> String
+afterColon (x:y:xs) = if y == ":" then unwords xs else afterColon (y:xs)
+
+
+{- to print a single flashcard -}
 
 printFlashCard :: String -> String -> IO ()
 printFlashCard question answer = putStrLn $ tableString [fixedLeftCol 50, numCol] --[ColSpec]
@@ -86,12 +98,25 @@ reverseParagraph :: [String] -> [String]
 reverseParagraph [] = []
 reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 
+
+{- to print a exit page with the score -}
+
 printExitPage :: Int -> [FilePath] -> IO()
 printExitPage score fileList = do
     putStr "You knew the answers to " >> (putStr $ show $ score) >> (printQuestionCount fileList 0)
     putStr "Thank you for using the flash cards program! ☆\n\n"
 
+printQuestionCount :: [String] -> Int -> IO()
+printQuestionCount [] count = putStr " out of the "  >> (putStr $ show $ count) >> putStr " flashcards!\n" 
+printQuestionCount (firstArg:argsList) count = do
+    txt <- (readFile firstArg)
+    (printQuestionCount argsList ((linesCount txt) + count))
 
+linesCount :: String -> Int
+linesCount text = length $ lines text 
+
+
+{- to create a frame instance of a shape to render the flash card on the welcome page -}
 
 newtype Shape = Shape (Point -> Bool)
 type Point = (Double, Double)
