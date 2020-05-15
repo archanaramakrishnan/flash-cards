@@ -1,5 +1,6 @@
 import Data.List
 import System.Environment
+import System.Directory
 import Control.Monad
 import Text.Layout.Table
 
@@ -11,7 +12,7 @@ main = getFileName
 getFileName :: IO()
 getFileName = do
     args <- getArgs
-    if length args == 0 then putStr "try ./flash_cards quiz.txt (from terminal) or :main quiz.txt (from ghci)\n" else do
+    if length args == 0 then putStr "try ./flash_cards quiz.txt (from terminal) \nor :main quiz.txt (from ghci)\n" else do
         printWelcomePage args
 
 
@@ -36,8 +37,11 @@ printWelcomePage args = do
 createQuestionList :: [String] -> [String] -> [FilePath] -> [FilePath] -> IO ()
 createQuestionList questionList answerList [] fileList = startFlashCards 0 questionList answerList fileList
 createQuestionList (questionList) (answerList) (firstArg:argsList) fileList = do 
-                    txt <- (readFile firstArg)
-                    createQuestionList (questionList ++ (questionFromFile txt)) (answerList ++ (answerFromFile txt)) argsList fileList
+                    isValidFile <- doesFileExist firstArg
+                    if isValidFile == True then do
+                        txt <- (readFile firstArg)
+                        createQuestionList (questionList ++ (questionFromFile txt)) (answerList ++ (answerFromFile txt)) argsList fileList
+                    else putStr "One or more of the files passed in do not exist in this directory. Please check the file names and try again.\n"
 
 
 {- to loop through the flash cards until the deck is empty -}
