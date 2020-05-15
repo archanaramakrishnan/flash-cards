@@ -1,0 +1,5 @@
+H : Hydrogen, atomic weight 1.008, atomic density 0.09, group 1
+Co : Cobalt, atomic weight 1.00858.933 1.008, atomic density 0.09, group 9
+Na : Sodium, atomic weight 22.990, atomic density 0.97, group 1
+Mn : Manganese, atomic weight 54.938, atomic density 7.43, group 7
+Br : Bromine, atomic weight 79.904, atomic density 3.12, group 17
