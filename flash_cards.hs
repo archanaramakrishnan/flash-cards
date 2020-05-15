@@ -6,19 +6,23 @@ import Text.Layout.Table
 main :: IO()
 main = printWelcomePage
   
+printWelcomePage :: IO()
+printWelcomePage = do
+    putStr "\n\n\tWelcome to the flash cards program!"
+    putStr "\n\t___________________________________\n\n"
+    putStr "\t  If you know the answer, press 'y'\n"
+    putStr "\t   to keep track of your score!\n\n"
+    putStr "\tIf you do not, press any other key ☆\n"
+    putStr "\tCards will repeat until you learn them!\n\n"
+    render (scale 0.8 frame) (scale 0.6 frame)
+    putStr "\n\t  Press any key to start reviewing!\n"
+    go <- getChar
+    getFileName
+
 getFileName :: IO()
 getFileName = do
     args <- getArgs
-    createQuestionList [] [] args args
-
-getQuestionCount :: [String] -> Int -> IO()
-getQuestionCount [] count = putStr " out of the "  >> (putStr $ show $ count) >> putStr " flashcards!!\n" 
-getQuestionCount (firstArg:argsList) count = do
-    txt <- (readFile firstArg)
-    (getQuestionCount argsList ((linesCount txt) + count))
-
-linesCount :: String -> Int
-linesCount text = length $ lines text 
+    createQuestionList [] [] args args 
 
 createQuestionList :: [String] -> [String] -> [FilePath] -> [FilePath] -> IO ()
 createQuestionList questionList answerList [] fileList = startFlashCards 0 questionList answerList fileList
@@ -44,6 +48,15 @@ startFlashCards score (q:questionList) (a:answerList) fileList = do
             if choice == 'q' || choice == 'Q' then printExitPage score fileList
             else if choice == 'y' || choice == 'Y' then (startFlashCards (score+1) (questionList) (answerList) fileList)
             else (startFlashCards score (questionList ++ [q]) (answerList ++ [a]) fileList)
+
+printQuestionCount :: [String] -> Int -> IO()
+printQuestionCount [] count = putStr " out of the "  >> (putStr $ show $ count) >> putStr " flashcards!!\n" 
+printQuestionCount (firstArg:argsList) count = do
+    txt <- (readFile firstArg)
+    (printQuestionCount argsList ((linesCount txt) + count))
+
+linesCount :: String -> Int
+linesCount text = length $ lines text
 
 grabQuestion :: String -> [String]
 grabQuestion txt = fmap word lst where lst = lines txt
@@ -75,21 +88,10 @@ reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 
 printExitPage :: Int -> [FilePath] -> IO()
 printExitPage score fileList = do
-    putStr "You knew the answers to " >> (putStr $ show $ score) >> (getQuestionCount fileList 0)
+    putStr "You knew the answers to " >> (putStr $ show $ score) >> (printQuestionCount fileList 0)
     putStr "Thank you for using the flash cards program! ☆\n\n"
 
-printWelcomePage :: IO()
-printWelcomePage = do
-    putStr "\n\n\tWelcome to the flash cards program!"
-    putStr "\n\t___________________________________\n\n"
-    putStr "\t  If you know the answer, press 'y'\n"
-    putStr "\t   to keep track of your score!\n\n"
-    putStr "\tIf you do not, press any other key ☆\n"
-    putStr "\tCards will repeat until you learn them!\n\n"
-    render (scale 0.8 frame) (scale 0.6 frame)
-    putStr "\n\t  Press any key to start reviewing!\n"
-    go <- getChar
-    getFileName
+
 
 newtype Shape = Shape (Point -> Bool)
 type Point = (Double, Double)
