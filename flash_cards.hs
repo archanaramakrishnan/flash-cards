@@ -4,12 +4,21 @@ import Control.Monad
 import Text.Layout.Table
 
 main :: IO()
-main = printWelcomePage
+main = getFileName
 
-{- to print the welcome page which calls the function to read the terminal arguments-}
+{- to get file names from the terminal to read the flashcard question and answers from -}
+
+getFileName :: IO()
+getFileName = do
+    args <- getArgs
+    if length args == 0 then putStr "try ./flash_cards quiz.txt (from terminal) or :main quiz.txt (from ghci)\n" else do
+        printWelcomePage args
+
+
+{- to print the welcome page which calls the function to create the flashcards deck-}
   
-printWelcomePage :: IO()
-printWelcomePage = do
+printWelcomePage :: [FilePath] -> IO()
+printWelcomePage args = do
     putStr "\n\n\tWelcome to the flash cards program!"
     putStr "\n\t___________________________________\n\n"
     putStr "\t  If you know the answer, press 'y'\n"
@@ -19,14 +28,6 @@ printWelcomePage = do
     render (scale 0.8 frame) (scale 0.6 frame)
     putStr "\n\t  Press any key to start reviewing!\n"
     go <- getChar
-    getFileName
-
-
-{- to get file names from the terminal to read the flashcard question and answers from -}
-
-getFileName :: IO()
-getFileName = do
-    args <- getArgs
     createQuestionList [] [] args args
 
 
