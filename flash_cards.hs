@@ -62,7 +62,7 @@ startFlashCards score (q:questionList) (a:answerList) fileList = do
 
 
 {- to read question and answers from the following format: 
-    "question is placed here : answer goes here" -}
+    "question is placed here : answer goes here" from file -}
 
 questionFromFile :: String -> [String]
 questionFromFile txt = fmap getQuestion $ lines txt
