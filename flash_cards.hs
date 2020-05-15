@@ -6,20 +6,29 @@ import Text.Layout.Table
 main :: IO()
 main = printWelcomePage
   
-loop :: IO()
-loop = do
+getFileName :: IO()
+getFileName = do
     args <- getArgs
-    createQuestionList [] [] args
+    createQuestionList [] [] args args
 
-createQuestionList :: [String] -> [String] -> [FilePath] -> IO ()
-createQuestionList questionList answerList [] = startFlashCards 0 questionList answerList
-createQuestionList (questionList) (answerList) (firstArg:argsList) = do 
+getQuestionCount :: [String] -> Int -> IO()
+getQuestionCount [] count = putStr " out of the "  >> (putStr $ show $ count) >> putStr " flashcards!!\n" 
+getQuestionCount (firstArg:argsList) count = do
+    txt <- (readFile firstArg)
+    (getQuestionCount argsList ((linesCount txt) + count))
+
+linesCount :: String -> Int
+linesCount text = length $ lines text 
+
+createQuestionList :: [String] -> [String] -> [FilePath] -> [FilePath] -> IO ()
+createQuestionList questionList answerList [] fileList = startFlashCards 0 questionList answerList fileList
+createQuestionList (questionList) (answerList) (firstArg:argsList) fileList = do 
                     txt <- (readFile firstArg)
-                    createQuestionList (questionList ++ (grabQuestion txt)) (answerList ++ (grabAnswer txt)) argsList
+                    createQuestionList (questionList ++ (grabQuestion txt)) (answerList ++ (grabAnswer txt)) argsList fileList
 
-startFlashCards :: Int -> [String] -> [String] -> IO ()
-startFlashCards score [] [] = putStr "You scored " >> (putStr $ show $ score) >> putStr " points!!\n" >> printExitPage score 0
-startFlashCards score (q:questionList) (a:answerList) = do
+startFlashCards :: Int -> [String] -> [String] -> [FilePath] -> IO ()
+startFlashCards score [] [] fileList = printExitPage score fileList
+startFlashCards score (q:questionList) (a:answerList) fileList = do
             printFlashCard "Question" q
             putStr "\t  Press any key to reveal the answer. "
             reveal <- getChar
@@ -32,9 +41,9 @@ startFlashCards score (q:questionList) (a:answerList) = do
             if choice /= '\n' then putStr "\n" else putStr ""
             putStr "\n\n\t\t    ☆ ☆ ☆ ☆ ☆\t\n\n"
             putStr "\n"
-            if choice == 'q' || choice == 'Q' then printExitPage score 0
-            else if choice == 'y' || choice == 'Y' then (startFlashCards (score+1) (questionList) (answerList))
-            else (startFlashCards score (questionList ++ [q]) (answerList ++ [a]))
+            if choice == 'q' || choice == 'Q' then printExitPage score fileList
+            else if choice == 'y' || choice == 'Y' then (startFlashCards (score+1) (questionList) (answerList) fileList)
+            else (startFlashCards score (questionList ++ [q]) (answerList ++ [a]) fileList)
 
 grabQuestion :: String -> [String]
 grabQuestion txt = fmap word lst where lst = lines txt
@@ -64,9 +73,9 @@ reverseParagraph :: [String] -> [String]
 reverseParagraph [] = []
 reverseParagraph (x:xs) = reverseLine x : reverseParagraph xs
 
-printExitPage :: Int -> Int -> IO()
-printExitPage score total = do
-    putStr "You knew the answers to " >> (putStr $ show $ score) >> putStr " out of the "  >> (putStr $ show $ total) >> putStr " flashcards!!\n" 
+printExitPage :: Int -> [FilePath] -> IO()
+printExitPage score fileList = do
+    putStr "You knew the answers to " >> (putStr $ show $ score) >> (getQuestionCount fileList 0)
     putStr "Thank you for using the flash cards program! ☆\n\n"
 
 printWelcomePage :: IO()
@@ -80,7 +89,7 @@ printWelcomePage = do
     render (scale 0.8 frame) (scale 0.6 frame)
     putStr "\n\t  Press any key to start reviewing!\n"
     go <- getChar
-    loop
+    getFileName
 
 newtype Shape = Shape (Point -> Bool)
 type Point = (Double, Double)
