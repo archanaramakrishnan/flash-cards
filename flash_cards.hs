@@ -4,6 +4,7 @@ import System.Directory
 import Control.Monad
 import Text.Layout.Table
 
+
 main :: IO()
 main = getFileName
 
@@ -51,7 +52,7 @@ startFlashCards score [] [] fileList = printExitPage score fileList
 startFlashCards score (q:questionList) (a:answerList) fileList = do
             putStr "\t  Press any key to reveal the answer.\n"
             printFlashCard "Question" q
-            putStr "\t\t\t☆"
+            putStr "\t\t\t☆\n"
             reveal <- getChar
             if reveal /= '\n' then putStr "\n" else putStr ""
             printFlashCard q a
